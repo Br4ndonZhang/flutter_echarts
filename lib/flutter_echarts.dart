@@ -81,12 +81,14 @@ class _EchartsState extends State<Echarts> {
 
   void init() async {
     final extensionsStr = this.widget.extensions.length > 0
-    ? this.widget.extensions.reduce(
-        (value, element) => value + '\n' + element
-      )
-    : '';
-    final themeStr = this.widget.theme != null ? '\'${this.widget.theme}\'' : 'null';
-    await _controller?.evaluateJavascript('''
+        ? this
+            .widget
+            .extensions
+            .reduce((value, element) => value + '\n' + element)
+        : '';
+    final themeStr =
+        this.widget.theme != null ? '\'${this.widget.theme}\'' : 'null';
+    await _controller?.runJavascript('''
       $echartsScript
       $extensionsStr
       var chart = echarts.init(document.getElementById('chart'), $themeStr);
@@ -126,7 +128,7 @@ class _EchartsState extends State<Echarts> {
   void update(String preOption) async {
     _currentOption = widget.option;
     if (_currentOption != preOption) {
-      await _controller?.evaluateJavascript('''
+      await _controller?.runJavascript('''
         try {
           chart.setOption($_currentOption, true);
         } catch(e) {
@@ -146,6 +148,7 @@ class _EchartsState extends State<Echarts> {
   void dispose() {
     if (Platform.isIOS) {
       _controller?.clearCache();
+      _controller = null;
     }
     super.dispose();
   }
